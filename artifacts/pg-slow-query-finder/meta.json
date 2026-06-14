@@ -1,0 +1,15 @@
+{
+  "id": "pg-slow-query-finder",
+  "name": "PostgreSQL Slow Query Finder",
+  "type": "snippet",
+  "version": "1.0.0",
+  "description": "SQL query against pg_stat_statements that surfaces the slowest statements by mean execution time, with call counts and total time.",
+  "tags": ["postgres", "sql", "performance", "observability"],
+  "language": "sql",
+  "license": "MIT",
+  "author": { "name": "NotMyToken", "url": "https://github.com/notmytoken" },
+  "entry": "slow_queries.sql",
+  "files": ["slow_queries.sql"],
+  "createdAt": "2026-06-13T00:00:00Z",
+  "updatedAt": "2026-06-13T00:00:00Z"
+}

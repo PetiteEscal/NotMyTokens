@@ -1,0 +1,15 @@
+{
+  "id": "code-review-prompt",
+  "name": "Focused Code Review Prompt",
+  "type": "prompt",
+  "version": "1.0.0",
+  "description": "System prompt that steers an LLM to review a diff for correctness bugs and high-value cleanups only, avoiding nitpicks and style noise.",
+  "tags": ["prompt", "llm", "code-review", "claude"],
+  "language": "md",
+  "license": "MIT",
+  "author": { "name": "NotMyToken", "url": "https://github.com/notmytoken" },
+  "entry": "prompt.md",
+  "files": ["prompt.md"],
+  "createdAt": "2026-06-13T00:00:00Z",
+  "updatedAt": "2026-06-13T00:00:00Z"
+}

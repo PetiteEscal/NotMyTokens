@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NotMyTokens — artifact registry</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <p class="kicker">// artifact registry</p>
+        <h1 class="glitch" data-text="NotMyTokens">NotMyTokens</h1>
+        <p class="tagline">Reusable artifacts — components, snippets, prompts — for humans and machines.</p>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="controls">
+        <input id="search" type="search" placeholder="Search name, description, tags…" autocomplete="off" />
+        <select id="type-filter" aria-label="Filter by type">
+          <option value="">All types</option>
+          <option value="component">component</option>
+          <option value="snippet">snippet</option>
+          <option value="prompt">prompt</option>
+          <option value="template">template</option>
+          <option value="dataset">dataset</option>
+          <option value="skill">skill</option>
+        </select>
+      </div>
+
+      <p id="status" class="status"></p>
+      <section id="grid" class="grid"></section>
+      <div id="empty" class="empty" hidden>
+        <p>No artifacts match your filters.</p>
+        <button id="empty-reset" type="button">Clear filters</button>
+      </div>
+    </main>
+
+    <dialog id="detail">
+      <div class="detail-head">
+        <h2 id="detail-title"></h2>
+        <button id="detail-close" aria-label="Close">×</button>
+      </div>
+      <p id="detail-desc" class="detail-desc"></p>
+      <div id="detail-meta" class="detail-meta"></div>
+      <div id="detail-tabs" class="filetabs" role="tablist"></div>
+      <div class="detail-file-head">
+        <code id="detail-filename"></code>
+        <button id="detail-copy">Copy</button>
+      </div>
+      <pre class="detail-code"><code id="detail-code"></code></pre>
+    </dialog>
+
+    <footer class="wrap">
+      <p>
+        Source of truth: the <code>artifacts/</code> folder in the repo. Submit via PR.
+        Consumed by LLMs through the <a href="https://modelcontextprotocol.io">MCP</a> server.
+      </p>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

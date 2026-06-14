@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-14T10:39:15.908Z",
+  "count": 3,
+  "artifacts": [
+    {
+      "id": "code-review-prompt",
+      "name": "Focused Code Review Prompt",
+      "type": "prompt",
+      "version": "1.0.0",
+      "description": "System prompt that steers an LLM to review a diff for correctness bugs and high-value cleanups only, avoiding nitpicks and style noise.",
+      "tags": [
+        "prompt",
+        "llm",
+        "code-review",
+        "claude"
+      ],
+      "language": "md",
+      "license": "MIT",
+      "author": {
+        "name": "NotMyToken",
+        "url": "https://github.com/notmytoken"
+      },
+      "entry": "prompt.md",
+      "files": [
+        "prompt.md"
+      ],
+      "createdAt": "2026-06-13T00:00:00Z",
+      "updatedAt": "2026-06-13T00:00:00Z",
+      "path": "artifacts/code-review-prompt"
+    },
+    {
+      "id": "pg-slow-query-finder",
+      "name": "PostgreSQL Slow Query Finder",
+      "type": "snippet",
+      "version": "1.0.0",
+      "description": "SQL query against pg_stat_statements that surfaces the slowest statements by mean execution time, with call counts and total time.",
+      "tags": [
+        "postgres",
+        "sql",
+        "performance",
+        "observability"
+      ],
+      "language": "sql",
+      "license": "MIT",
+      "author": {
+        "name": "NotMyToken",
+        "url": "https://github.com/notmytoken"
+      },
+      "entry": "slow_queries.sql",
+      "files": [
+        "slow_queries.sql"
+      ],
+      "createdAt": "2026-06-13T00:00:00Z",
+      "updatedAt": "2026-06-13T00:00:00Z",
+      "path": "artifacts/pg-slow-query-finder"
+    },
+    {
+      "id": "react-pricing-card",
+      "name": "Pricing Card",
+      "type": "component",
+      "version": "1.0.0",
+      "description": "Accessible, responsive pricing card built with React and Tailwind CSS. Highlights a featured tier and lists features with checkmarks.",
+      "tags": [
+        "react",
+        "tailwind",
+        "ui",
+        "pricing",
+        "card"
+      ],
+      "language": "tsx",
+      "license": "MIT",
+      "author": {
+        "name": "NotMyToken",
+        "url": "https://github.com/notmytoken"
+      },
+      "entry": "PricingCard.tsx",
+      "files": [
+        "PricingCard.tsx"
+      ],
+      "dependencies": {
+        "react": "^18",
+        "tailwindcss": "^3"
+      },
+      "createdAt": "2026-06-13T00:00:00Z",
+      "updatedAt": "2026-06-13T00:00:00Z",
+      "path": "artifacts/react-pricing-card"
+    }
+  ]
+}

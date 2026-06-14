@@ -1,0 +1,12 @@
+{
+  "name": "notmytoken",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Public registry of reusable artifacts (components, snippets, prompts) with a static gallery and a remote MCP server.",
+  "scripts": {
+    "build:index": "node scripts/build-index.mjs",
+    "serve:web": "npm run build:index && node scripts/dev-server.mjs"
+  },
+  "license": "MIT"
+}

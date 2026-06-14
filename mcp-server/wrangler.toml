@@ -1,0 +1,13 @@
+name = "notmytoken-mcp"
+main = "src/index.ts"
+compatibility_date = "2025-06-01"
+
+# Public registry repo (source of truth). Override for your fork.
+[vars]
+GITHUB_OWNER = "your-username"
+GITHUB_REPO = "notmytoken"
+GITHUB_BRANCH = "main"
+
+# GITHUB_TOKEN is a secret, NOT a var. Set it only if you want uploads enabled:
+#   wrangler secret put GITHUB_TOKEN
+# Needs a fine-grained PAT with Contents + Pull requests: read/write on the repo.

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://notmytoken.dev/schema/meta.schema.json",
+  "title": "NotMyToken Artifact Metadata",
+  "description": "Normalized metadata describing a single artifact in the registry. Lives at artifacts/<id>/meta.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "type", "version", "description", "tags", "entry", "files"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique slug. Must match the artifact folder name.",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+      "minLength": 2,
+      "maxLength": 64
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable title.",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "type": {
+      "type": "string",
+      "description": "Coarse category used for filtering.",
+      "enum": ["component", "snippet", "prompt", "template", "dataset", "skill"]
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the artifact content.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "description": {
+      "type": "string",
+      "description": "One or two sentences explaining what the artifact is and when to use it.",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "tags": {
+      "type": "array",
+      "description": "Free-form keywords for search.",
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9+.-]*$" },
+      "uniqueItems": true,
+      "maxItems": 20
+    },
+    "language": {
+      "type": "string",
+      "description": "Primary language / format of the entry file (e.g. tsx, python, sql, md).",
+      "maxLength": 24
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier.",
+      "default": "MIT",
+      "maxLength": 64
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "maxLength": 120 },
+        "url": { "type": "string", "format": "uri", "maxLength": 300 }
+      }
+    },
+    "entry": {
+      "type": "string",
+      "description": "Relative path (within the artifact folder) to the main file a consumer should read first.",
+      "maxLength": 200
+    },
+    "files": {
+      "type": "array",
+      "description": "All content files shipped with the artifact, relative to the artifact folder. Excludes meta.json.",
+      "items": { "type": "string", "maxLength": 200 },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Optional runtime dependencies, e.g. {\"react\": \"^18\"}.",
+      "additionalProperties": { "type": "string" }
+    },
+    "preview": {
+      "type": "string",
+      "description": "Optional relative path to a preview image (png/svg).",
+      "maxLength": 200
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp."
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last-update timestamp."
+    }
+  }
+}

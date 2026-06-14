@@ -1,0 +1,16 @@
+{
+  "id": "react-pricing-card",
+  "name": "Pricing Card",
+  "type": "component",
+  "version": "1.0.0",
+  "description": "Accessible, responsive pricing card built with React and Tailwind CSS. Highlights a featured tier and lists features with checkmarks.",
+  "tags": ["react", "tailwind", "ui", "pricing", "card"],
+  "language": "tsx",
+  "license": "MIT",
+  "author": { "name": "NotMyToken", "url": "https://github.com/notmytoken" },
+  "entry": "PricingCard.tsx",
+  "files": ["PricingCard.tsx"],
+  "dependencies": { "react": "^18", "tailwindcss": "^3" },
+  "createdAt": "2026-06-13T00:00:00Z",
+  "updatedAt": "2026-06-13T00:00:00Z"
+}

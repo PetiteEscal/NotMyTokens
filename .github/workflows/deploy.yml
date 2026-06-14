@@ -1,0 +1,80 @@
+name: Build index & deploy gallery
+
+on:
+  push:
+    branches: [main]
+    paths: ["web/**", "artifacts/**", "scripts/build-index.mjs", ".github/workflows/deploy.yml"]
+  pull_request:
+    paths: ["artifacts/**", "scripts/build-index.mjs"]
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit the regenerated index.json
+  pages: write # publish to Pages
+  id-token: write # OIDC for deploy-pages
+
+# Serialize Pages deploys; never cancel an in-flight deployment.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build artifact index
+        run: npm run build:index
+
+      # On PRs: fail if index.json was not regenerated and committed.
+      - name: Validate index is up to date
+        if: github.event_name == 'pull_request'
+        run: |
+          git diff --exit-code index.json || {
+            echo "::error::index.json is stale. Run 'npm run build:index' and commit the result."
+            exit 1
+          }
+
+      # On main: commit the rebuilt index so the MCP server can read it via raw GitHub.
+      - name: Commit index.json if changed
+        if: github.event_name != 'pull_request'
+        run: |
+          if ! git diff --quiet index.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add index.json
+            git commit -m "chore: rebuild artifact index"
+            git push
+          fi
+
+      # Assemble + upload the Pages site (skipped on PRs).
+      - name: Assemble site
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p _site
+          cp web/* _site/
+          cp index.json _site/
+          cp -r artifacts _site/artifacts
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+        if: github.event_name != 'pull_request'
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

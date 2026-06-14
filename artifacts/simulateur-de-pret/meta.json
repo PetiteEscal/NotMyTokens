@@ -1,0 +1,15 @@
+{
+  "id": "simulateur-de-pret",
+  "name": "Simulateur de financement immobilier",
+  "type": "simulator",
+  "version": "1.0.0",
+  "description": "Simulateur de prêt immobilier complet : VEFA avec différé d'amortissement, prêt lissé, PTZ (zones et tranches), échéancier annuel, graphiques et taux d'endettement HCSF.",
+  "tags": ["finance", "immobilier", "pret", "ptz", "vefa", "simulateur"],
+  "language": "html",
+  "license": "MIT",
+  "author": { "name": "PetiteEscal", "url": "https://github.com/PetiteEscal/NotMyTokens" },
+  "entry": "simulateur.html",
+  "files": ["simulateur.html"],
+  "createdAt": "2026-06-14T00:00:00Z",
+  "updatedAt": "2026-06-14T00:00:00Z"
+}

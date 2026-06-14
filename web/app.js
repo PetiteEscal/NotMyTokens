@@ -18,6 +18,10 @@ const els = {
   desc: document.getElementById("detail-desc"),
   meta: document.getElementById("detail-meta"),
   tabs: document.getElementById("detail-tabs"),
+  preview: document.getElementById("detail-preview"),
+  frame: document.getElementById("detail-frame"),
+  open: document.getElementById("detail-open"),
+  source: document.getElementById("detail-source"),
   filename: document.getElementById("detail-filename"),
   code: document.getElementById("detail-code"),
   copy: document.getElementById("detail-copy"),
@@ -114,15 +118,36 @@ async function openDetail(a) {
       })
   );
 
-  // One tab per file; entry first. Content is fetched lazily and cached.
+  // Renderable artifacts (HTML) get a live "Preview" tab; every file also gets
+  // a source tab. Content/preview is loaded lazily and cached.
+  const isRenderable = a.renderable || /\.html?$/i.test(a.entry || "");
   const files = [a.entry, ...(a.files || []).filter((f) => f !== a.entry)];
   const cache = new Map();
+  let frameLoaded = false;
+
+  function selectTab(key) {
+    for (const tab of els.tabs.children) {
+      tab.setAttribute("aria-selected", String(tab.dataset.key === key));
+    }
+  }
+
+  function showPreview() {
+    selectTab("__preview__");
+    els.preview.hidden = false;
+    els.source.hidden = true;
+    if (!frameLoaded) {
+      const url = `${baseDir()}${a.path}/${a.entry}`;
+      els.frame.src = url;
+      els.open.href = url;
+      frameLoaded = true;
+    }
+  }
 
   async function showFile(file) {
+    selectTab(file);
+    els.preview.hidden = true;
+    els.source.hidden = false;
     els.filename.textContent = file;
-    for (const tab of els.tabs.children) {
-      tab.setAttribute("aria-selected", String(tab.dataset.file === file));
-    }
     if (!cache.has(file)) {
       els.code.textContent = "Loading…";
       try {
@@ -135,21 +160,28 @@ async function openDetail(a) {
     els.code.textContent = cache.get(file);
   }
 
+  const tabs = [];
+  if (isRenderable) tabs.push({ key: "__preview__", label: "⊳ Preview", onClick: showPreview });
+  for (const file of files) tabs.push({ key: file, label: file, onClick: () => showFile(file) });
+
   els.tabs.replaceChildren(
-    ...files.map((file) => {
-      const tab = document.createElement("button");
-      tab.type = "button";
-      tab.className = "filetab";
-      tab.role = "tab";
-      tab.dataset.file = file;
-      tab.textContent = file;
-      tab.addEventListener("click", () => showFile(file));
-      return tab;
+    ...tabs.map((t) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "filetab";
+      btn.role = "tab";
+      btn.dataset.key = t.key;
+      btn.textContent = t.label;
+      btn.addEventListener("click", t.onClick);
+      return btn;
     })
   );
 
+  // Clear any previously-rendered artifact before showing the new one.
+  els.frame.removeAttribute("src");
   els.dialog.showModal();
-  showFile(a.entry);
+  if (isRenderable) showPreview();
+  else showFile(a.entry);
 }
 
 els.copy.addEventListener("click", async () => {

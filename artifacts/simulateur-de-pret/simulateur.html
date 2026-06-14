@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur de financement immobilier</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#0f1419;--panel:#171e26;--panel2:#1c242e;--bdr:#28323e;--bdr2:#222b35;
+  --t1:#e8edf2;--t2:#8b9aab;--t3:#5c6b7a;
+  --blue:#4d9fff;--green:#2dd4a0;--coral:#ff6b4d;--amber:#ffb84d;--purple:#a78bfa;--pink:#f472b6;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--t1);padding:2rem 1.25rem 3rem;max-width:880px;margin:0 auto}
+.mono{font-family:'DM Mono',monospace}
+h1{font-size:21px;font-weight:700;letter-spacing:-0.02em}
+.sub{font-size:12.5px;color:var(--t3);margin-top:3px;margin-bottom:1.75rem}
+
+.panel{background:var(--panel);border:1px solid var(--bdr);border-radius:var(--r);padding:1.4rem;margin-bottom:.9rem}
+.ptitle{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--t3);margin-bottom:1.1rem}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px 26px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.flbl{font-size:12px;color:var(--t2);display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.fv{font-weight:600;color:var(--t1);font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fv.dim{color:var(--t3);font-weight:400;font-size:11px}
+input[type=range]{width:100%;height:5px;accent-color:var(--blue);cursor:pointer;background:transparent}
+input[type=number],select{padding:7px 9px;border:1px solid var(--bdr);border-radius:8px;font-size:12.5px;font-family:inherit;width:100%;background:var(--panel2);color:var(--t1)}
+input[type=number]{-moz-appearance:textfield;font-variant-numeric:tabular-nums}
+input[type=number]:focus,select:focus{outline:none;border-color:var(--blue)}
+.lbl-sm{font-size:11px;color:var(--t3);display:block;margin-bottom:4px}
+
+.tog{display:inline-flex;border:1px solid var(--bdr);border-radius:8px;overflow:hidden;background:var(--panel2)}
+.tog button{padding:5px 13px;font-size:12px;font-family:inherit;cursor:pointer;background:transparent;color:var(--t2);border:none;transition:all .15s}
+.tog button.on{background:var(--blue);color:#06121f;font-weight:600}
+.tog.full{width:100%}
+.tog.full button{flex:1}
+.row{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--t2);flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--t2);cursor:pointer;user-select:none}
+.chk input{accent-color:var(--green);width:15px;height:15px;flex-shrink:0}
+.chk.main{font-weight:600;color:var(--t1);font-size:13px}
+.sep{height:1px;background:var(--bdr2);margin:1.2rem 0}
+.hint{font-size:11px;color:var(--t3);line-height:1.5;margin-top:4px}
+
+/* Phase timeline */
+.timeline{display:flex;height:34px;border-radius:8px;overflow:hidden;margin:.4rem 0 .2rem;border:1px solid var(--bdr)}
+.tl-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#06121f;min-width:0;overflow:hidden;white-space:nowrap;padding:0 4px}
+.tl-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-bottom:.8rem}
+
+/* Debt */
+.debt-bar{height:7px;border-radius:4px;background:var(--bdr2);overflow:hidden;margin-top:7px;position:relative}
+.debt-fill{height:100%;border-radius:4px;transition:width .4s,background .4s}
+.debt-mark{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--t2);left:87.5%}
+.debt-info{display:flex;justify-content:space-between;font-size:10.5px;margin-top:5px;color:var(--t3)}
+
+/* Badges */
+.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;margin-top:8px}
+.b-ok{background:rgba(45,212,160,.12);color:var(--green)}
+.b-warn{background:rgba(255,184,77,.12);color:var(--amber)}
+.b-bad{background:rgba(255,107,77,.12);color:var(--coral)}
+.b-neu{background:var(--panel2);color:var(--t2)}
+.ptz-badge{margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.55}
+.ptz-badge.ok{background:rgba(45,212,160,.08);border:1px solid rgba(45,212,160,.25);color:var(--green)}
+.ptz-badge.ko{background:rgba(255,184,77,.08);border:1px solid rgba(255,184,77,.25);color:var(--amber)}
+.ptz-badge b{font-size:13.5px}
+
+/* Cash */
+.cash-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;color:var(--t2)}
+.cash-row b{color:var(--t1);font-weight:600;font-variant-numeric:tabular-nums}
+.cash-row.total{font-weight:700;color:var(--t1);padding-top:11px;font-size:14.5px;border-top:2px solid var(--bdr)}
+
+/* Phases payment cards */
+.phases{display:grid;gap:8px;margin-bottom:.9rem}
+.phase-card{background:var(--panel);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.phase-num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#06121f}
+.phase-info{min-width:0}
+.phase-t{font-size:12.5px;font-weight:600;color:var(--t1)}
+.phase-s{font-size:11px;color:var(--t3);margin-top:1px}
+.phase-v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;white-space:nowrap}
+
+/* Metrics */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:.9rem}
+.mc{background:var(--panel);border:1px solid var(--bdr);border-radius:var(--r);padding:13px 15px}
+.mc-l{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--t3);margin-bottom:5px}
+.mc-v{font-size:18px;font-weight:700;letter-spacing:-0.02em;font-variant-numeric:tabular-nums}
+.mc-s{font-size:10.5px;color:var(--t3);margin-top:4px;line-height:1.45}
+.mc-s .g{color:var(--green);font-weight:600}
+.mc-s .r{color:var(--coral);font-weight:600}
+
+/* Charts */
+.chart-card{background:var(--panel);border:1px solid var(--bdr);border-radius:var(--r);padding:1.2rem;margin-bottom:.9rem}
+.ch-title{font-size:13px;font-weight:600}
+.ch-sub{font-size:11px;color:var(--t3);margin-bottom:10px;margin-top:1px}
+.ch-leg{display:flex;gap:13px;font-size:10.5px;color:var(--t2);flex-wrap:wrap;margin-bottom:10px}
+.ch-leg span{display:flex;align-items:center;gap:5px}
+.ldot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.donut-split{display:grid;grid-template-columns:200px 1fr;gap:26px;align-items:center}
+.dl{display:flex;flex-direction:column;gap:5px}
+.dlr{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--t2)}
+.dlr .v{margin-left:auto;font-weight:600;color:var(--t1);font-variant-numeric:tabular-nums}
+.dlr .p{font-size:10.5px;color:var(--t3);min-width:44px;text-align:right}
+
+/* Amort */
+.amort-wrap{background:var(--panel);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;margin-bottom:.9rem}
+.amort-pad{padding:1.1rem 1.2rem .6rem}
+.amort-h{display:grid;grid-template-columns:36px 1.1fr 1fr 1fr 1fr 1.1fr;gap:4px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--t3);padding:8px 16px;background:var(--panel2);border-bottom:1px solid var(--bdr)}
+.amort-r{display:grid;grid-template-columns:36px 1.1fr 1fr 1fr 1fr 1.1fr;gap:4px;font-size:11.5px;padding:6px 16px;border-bottom:1px solid var(--bdr2);font-variant-numeric:tabular-nums;color:var(--t2)}
+.amort-r .hl{color:var(--t1);font-weight:500}
+.amort-sep{font-size:10px;padding:5px 16px;font-weight:600;border-bottom:1px solid var(--bdr2)}
+.amort-sep.s1{background:rgba(77,159,255,.07);color:var(--blue)}
+.amort-sep.s2{background:rgba(45,212,160,.07);color:var(--green)}
+.amort-b{max-height:300px;overflow-y:auto}
+.amort-b::-webkit-scrollbar{width:8px}
+.amort-b::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:4px}
+
+/* Validation */
+.val-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.val-table th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--t3);padding:6px 8px;border-bottom:1px solid var(--bdr)}
+.val-table td{padding:6px 8px;border-bottom:1px solid var(--bdr2);font-variant-numeric:tabular-nums;color:var(--t2)}
+.val-table td.ok{color:var(--green);font-weight:600}
+details{margin-bottom:.9rem}
+summary{cursor:pointer;font-size:12px;color:var(--t3);padding:.6rem 1rem;background:var(--panel);border:1px solid var(--bdr);border-radius:var(--r);user-select:none}
+summary:hover{color:var(--t2)}
+details[open] summary{border-radius:var(--r) var(--r) 0 0}
+.det-body{background:var(--panel);border:1px solid var(--bdr);border-top:none;border-radius:0 0 var(--r) var(--r);padding:1rem 1.2rem}
+
+.footer{font-size:10.5px;color:var(--t3);text-align:center;margin-top:1.5rem;line-height:1.8}
+.footer a{color:var(--t2)}
+
+@media(max-width:660px){
+  .g2{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+  .donut-split{grid-template-columns:1fr}
+  body{padding:1rem .8rem 2rem}
+  .amort-h,.amort-r{grid-template-columns:30px 1fr 1fr 1fr;font-size:10.5px}
+  .amort-h span:nth-child(4),.amort-r span:nth-child(4),
+  .amort-h span:nth-child(5),.amort-r span:nth-child(5){display:none}
+}
+</style>
+</head>
+<body>
+
+<h1>Simulateur de financement immobilier</h1>
+<p class="sub">VEFA · Différé d'amortissement · Prêt lissé · PTZ · HCSF</p>
+
+<!-- ============ CONFIG ============ -->
+<div class="panel">
+  <div class="ptitle">Le bien</div>
+  <div class="g2">
+    <div class="field"><div class="flbl">Prix du bien <span class="fv" id="vp"></span></div><input type="range" id="sp" min="100000" max="1500000" step="5000" value="300000" oninput="upd()"></div>
+    <div class="field"><div class="flbl">Apport personnel <span style="display:flex;gap:5px;align-items:baseline"><span class="fv" id="va"></span><span class="fv dim" id="vap"></span></span></div><input type="range" id="sa" min="0" max="500000" step="5000" value="60000" oninput="upd()"></div>
+  </div>
+  <div class="row" style="margin-top:14px">
+    Type <div class="tog"><button id="tneu" class="on" onclick="setT('neu')">Neuf (VEFA)</button><button id="tanc" onclick="setT('anc')">Ancien</button></div>
+    <span class="fv dim" id="vfp">notaire ≈ 2,5 %</span>
+    <label class="chk" style="margin-left:auto"><input type="checkbox" id="fn-off" onchange="upd()"> Notaire offert</label>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="ptitle">Le prêt principal</div>
+  <div class="g2">
+    <div class="field"><div class="flbl">Taux nominal annuel <span class="fv" id="vr"></span></div><input type="range" id="sr" min="1" max="7" step="0.01" value="3.50" oninput="upd()"></div>
+    <div class="field"><div class="flbl">Durée de remboursement <span class="fv" id="vy"></span></div><input type="range" id="sy" min="10" max="25" step="1" value="25" oninput="upd()"></div>
+    <div class="field"><div class="flbl">Assurance (taux annuel / capital) <span class="fv" id="vas"></span></div><input type="range" id="sas" min="0" max="0.8" step="0.01" value="0.30" oninput="upd()"></div>
+    <div class="field"><div class="flbl">Différé d'amortissement (VEFA) <span class="fv" id="vd0"></span></div><input type="range" id="sd0" min="0" max="36" step="1" value="0" oninput="upd()"></div>
+  </div>
+  <div class="row" style="margin-top:10px;padding:8px 12px;background:var(--panel2);border-radius:8px">
+      <span>Durée totale du prêt</span>
+      <span class="fv" id="vtot" style="margin-left:auto">—</span>
+    </div>
+    <p class="hint">Pendant le différé (construction VEFA), vous ne payez que les intérêts intercalaires + l'assurance — le capital ne s'amortit pas. Durée totale = remboursement + différé.</p>
+  <div class="sep"></div>
+  <div class="g2">
+    <div class="field">
+      <span class="lbl-sm">Frais bancaires (dossier + garantie)</span>
+      <input type="number" id="sfb" value="2000" step="100" min="0" oninput="upd()">
+    </div>
+    <div class="field">
+      <span class="lbl-sm">Revenus nets mensuels du foyer</span>
+      <input type="number" id="srev" value="5000" step="50" min="0" oninput="upd()">
+    </div>
+  </div>
+  <div class="debt-bar"><div class="debt-fill" id="debt-fill"></div><div class="debt-mark"></div></div>
+  <div class="debt-info"><span>Taux d'endettement (pire phase) : <b class="mono" id="debt-pct" style="color:var(--t1)">—</b></span><span>HCSF 35 %</span></div>
+  <div id="debt-warn"></div>
+</div>
+
+<div class="panel">
+  <label class="chk main"><input type="checkbox" id="ptz-on" checked onchange="togglePTZ()"> Prêt à Taux Zéro</label>
+  <div id="ptz-panel">
+    <div class="g3" style="margin-top:12px">
+      <div class="field"><span class="lbl-sm">Zone</span><select id="p-zone" onchange="upd()"><option value="Abis" selected>A bis</option><option value="A">A</option><option value="B1">B1</option><option value="B2">B2</option><option value="C">C</option></select></div>
+      <div class="field"><span class="lbl-sm">Personnes au foyer</span><div class="tog full"><button id="pp1" onclick="setP(1)">1</button><button id="pp2" class="on" onclick="setP(2)">2</button><button id="pp3" onclick="setP(3)">3</button><button id="pp4" onclick="setP(4)">4</button><button id="pp5" onclick="setP(5)">5+</button></div></div>
+      <div class="field"><span class="lbl-sm">RFR N-2 du foyer (€)</span><input type="number" id="p-rfr" value="50000" step="1000" oninput="upd()"></div>
+    </div>
+    <div id="ptz-banner"></div>
+    <div class="sep"></div>
+    <label class="chk"><input type="checkbox" id="lisse" checked onchange="upd()"> <span><b style="color:var(--t1)">Lissage du prêt principal</b> — la banque module le prêt principal pour que votre mensualité totale reste constante malgré le PTZ (pratique courante des banques pour intégrer un PTZ)</span></label>
+  </div>
+</div>
+
+<!-- ============ TIMELINE ============ -->
+<div class="panel">
+  <div class="ptitle">Phases de remboursement</div>
+  <div class="timeline" id="tl"></div>
+  <div class="tl-lbl"><span>Signature</span><span id="tl-end">—</span></div>
+  <div class="phases" id="phases"></div>
+</div>
+
+<!-- ============ CASH ============ -->
+<div class="panel">
+  <div class="ptitle">Épargne à mobiliser</div>
+  <div class="cash-row">Apport personnel <b id="rap">—</b></div>
+  <div class="cash-row" id="fn-row">+ Frais de notaire <b id="rfn">—</b></div>
+  <div class="cash-row">+ Frais bancaires <b id="rfb">—</b></div>
+  <div class="cash-row total">Total cash jour J <b id="rct">—</b></div>
+  <div id="bdg"></div>
+</div>
+
+<!-- ============ METRICS ============ -->
+<div class="metrics">
+  <div class="mc"><div class="mc-l">Financement</div><div class="mc-v" id="rc">—</div><div class="mc-s" id="rcs">—</div></div>
+  <div class="mc"><div class="mc-l">Total intérêts</div><div class="mc-v" id="ri">—</div><div class="mc-s" id="ris">—</div></div>
+  <div class="mc"><div class="mc-l">Assurance totale</div><div class="mc-v" id="ra">—</div><div class="mc-s" id="ras">—</div></div>
+  <div class="mc"><div class="mc-l">Coût total crédit</div><div class="mc-v" id="rco">—</div><div class="mc-s" id="rcos">—</div></div>
+</div>
+
+<!-- ============ CHARTS ============ -->
+<div class="chart-card">
+  <div class="ch-title">Mensualité par phase</div>
+  <div class="ch-sub">Décomposition mois par mois — l'effet du différé, du PTZ et du lissage</div>
+  <div class="ch-leg" id="c1leg"></div>
+  <div style="position:relative;height:240px"><canvas id="c1"></canvas></div>
+</div>
+
+<div class="chart-card">
+  <div class="ch-title">Capital restant dû</div>
+  <div class="ch-sub">Le plateau initial = différé d'amortissement (le capital ne baisse pas)</div>
+  <div class="ch-leg" id="c2leg"></div>
+  <div style="position:relative;height:220px"><canvas id="c2"></canvas></div>
+</div>
+
+<div class="chart-card">
+  <div class="ch-title">Coût total de l'opération</div>
+  <div class="donut-split">
+    <div style="position:relative;height:200px"><canvas id="c3"></canvas></div>
+    <div class="dl" id="c3leg"></div>
+  </div>
+</div>
+
+<!-- ============ AMORT ============ -->
+<div class="amort-wrap">
+  <div class="amort-pad"><div class="ch-title">Plan d'amortissement annuel</div></div>
+  <div class="amort-h"><span>An</span><span>Mensualité</span><span>Intérêts</span><span>Capital</span><span>Assurance</span><span>Restant dû</span></div>
+  <div class="amort-b" id="atbl"></div>
+</div>
+
+<div class="footer">
+  Simulation indicative, sans valeur contractuelle · PTZ : décret 2025-299 · HCSF : 35 % max<br>
+  Le TAEG réel inclut tous les frais — exigez-le systématiquement · <a href="https://www.service-public.fr/particuliers/vosdroits/F10871" target="_blank">service-public.fr</a>
+</div>
+
+<script>
+/* ================= CORE ENGINE ================= */
+var PTZ={
+  cf:[1,1.5,1.8,2.1,2.4],
+  pl:{Abis:150000,A:150000,B1:135000,B2:110000,C:100000},
+  tr:{Abis:[25e3,31e3,37e3,49e3],A:[25e3,31e3,37e3,49e3],B1:[21500,26e3,3e4,34500],B2:[18e3,22500,27e3,31e3],C:[15e3,19500,24e3,28500]},
+  qt:[.5,.4,.4,.2],
+  qtMaison:[.3,.2,.2,.1],
+  du:[{d:120,r:180},{d:96,r:144},{d:24,r:156},{d:0,r:120}]
+};
+
+function calcPTZ(zone,nb,rfr,prix,maison){
+  var cf=PTZ.cf[Math.min(nb-1,4)];
+  var rev=Math.max(rfr,prix/9),qf=rev/cf,se=PTZ.tr[zone];
+  var t=-1;for(var i=0;i<4;i++){if(qf<=se[i]){t=i;break;}}
+  if(t<0)return{ok:false,msg:'Quotient familial '+Math.round(qf).toLocaleString('fr-FR')+' € > plafond zone ('+se[3].toLocaleString('fr-FR')+' €)'};
+  var qts=maison?PTZ.qtMaison:PTZ.qt;
+  var pl=PTZ.pl[zone]*cf,as=Math.min(prix,pl),mt=Math.round(qts[t]*as),du=PTZ.du[t];
+  return{ok:true,t:t+1,qf:Math.round(qf),qt:qts[t],pl:pl,as:as,mt:mt,diffM:du.d,rembM:du.r};
+}
+
+/*
+ simulate(): moteur générique par phases, mois par mois.
+ - capP: prêt principal, taux r (mensuel), durée nTot mois, différé d0 (intérêts seuls)
+ - capZ: PTZ, différé dZ mois (aligné sur max(d0, différé tranche)), remboursé sur rZ mois
+ - lissage: si actif, la mensualité crédit totale est constante après le différé
+   (bisection sur la cible C : principal paie C - mensualité PTZ)
+*/
+function simulate(capP,r,nTot,d0,capZ,dZ,rZ,lisse,insP,insZ){
+  /* insP/insZ: assurance mensuelle sur chaque prêt — le lissage bancaire vise
+     une mensualité TOTALE constante, assurance comprise. */
+  insP=insP||0;insZ=insZ||0;
+  var Mz = capZ>0 ? capZ/rZ : 0;
+  var zStart=Math.max(d0,dZ), zEnd=zStart+(capZ>0?rZ:0);
+
+  function annuity(P,r,n){if(P<=0)return 0;if(r<1e-9)return P/n;return P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1)}
+
+  function run(C,record){
+    /* C = cible mensualité totale constante (crédit + PTZ + assurances) après différé.
+       Si lissage off, C=null et le principal paie son annuité fixe. */
+    var B=capP,Z=capZ,ti=0,months=record?[]:null;
+    var Mp_fixed = annuity(capP,r,nTot-d0);
+    for(var m=1;m<=nTot;m++){
+      var iP=B*r, payP=0, payZ=0;
+      var insNow=insP+(m<=zEnd&&capZ>0?insZ:0);
+      if(m<=d0){ payP=iP; }            /* différé: intérêts seuls */
+      else{
+        payZ=(m>zStart&&m<=zEnd&&Z>0)?Math.min(Mz,Z+0.0001):0;
+        var target = C!==null ? Math.max(C-payZ-insNow, iP) : Mp_fixed;
+        payP=Math.min(target, B+iP);
+      }
+      ti+=iP;
+      B=Math.max(0,B+iP-payP);
+      if(payZ>0)Z=Math.max(0,Z-payZ);
+      if(record)months.push({iP:iP,payP:payP,payZ:payZ,B:B,Z:Z,ins:insNow});
+    }
+    return{B:B,ti:ti,months:months};
+  }
+
+  var C=null;
+  if(lisse&&capZ>0){
+    /* bisection: trouver C tel que B(nTot)=0 */
+    var base=annuity(capP,r,nTot-d0);
+    var lo=base*0.4, hi=base+Mz+insP+insZ+20;
+    for(var k=0;k<60;k++){var mid=(lo+hi)/2;if(run(mid,false).B>0.01)lo=mid;else hi=mid;}
+    C=(lo+hi)/2;
+  }
+  var res=run(C,true);
+  res.C=C;res.Mz=Mz;res.zStart=zStart;res.zEnd=zEnd;
+  return res;
+}
+
+/* ================= UI ================= */
+var ch1=null,ch2=null,ch3=null,neuf=true,nbP=2;
+function fr(n){return Math.round(n).toLocaleString('fr-FR')+'\u202f€'}
+function fr2(n){return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+'\u202f€'}
+function p1(v){return v.toFixed(1).replace('.',',')+'\u202f%'}
+function p2(v){return v.toFixed(2).replace('.',',')+'\u202f%'}
+function g(id){return document.getElementById(id)}
+function s(id,v){g(id).textContent=v}
+function setT(t){neuf=t==='neu';g('tneu').className=neuf?'on':'';g('tanc').className=neuf?'':'on';g('vfp').textContent='notaire ≈ '+(neuf?'2,5':'7,5')+'\u202f%';if(!neuf){g('ptz-on').checked=false;togglePTZ();}upd()}
+function setP(n){nbP=n;for(var i=1;i<=5;i++)g('pp'+i).className=i===n?'on':'';upd()}
+function togglePTZ(){g('ptz-panel').style.display=g('ptz-on').checked?'':'none';upd()}
+
+var FONT={size:10.5,family:'DM Sans'};
+var GRID='rgba(140,160,180,.08)';
+
+function upd(){
+  var prix=+g('sp').value, ai=g('sa'), maxA=Math.floor(prix*.95/5000)*5000;
+  ai.max=maxA;if(+ai.value>maxA)ai.value=maxA;
+  var apport=+ai.value, rA=+g('sr').value/100, yrs=+g('sy').value, tAss=+g('sas').value/100;
+  var d0=+g('sd0').value, fb=+g('sfb').value||0, rev=+g('srev').value||0;
+  var fnOff=g('fn-off').checked, ptzOn=g('ptz-on').checked, lisse=g('lisse').checked;
+  var nTot=yrs*12+d0, r=rA/12, fnp=neuf?.025:.075;
+
+  s('vp',fr(prix));s('va',fr(apport));g('vap').textContent='('+p1(apport/prix*100)+')';
+  s('vr',p2(rA*100));s('vy',yrs+' ans');s('vas',p2(tAss*100));
+  s('vtot',(d0>0?yrs+' ans + '+d0+' mois = ':'')+(nTot/12%1===0?(nTot/12)+' ans':Math.floor(nTot/12)+' ans '+(nTot%12)+' mois')+' ('+nTot+' mois)');
+  s('vd0',d0+' mois');
+
+  var besoin=prix-apport;
+  var fn=fnOff?0:prix*fnp;
+
+  /* PTZ */
+  var ptz=null;
+  if(ptzOn&&besoin>0&&neuf){
+    var rfr=+g('p-rfr').value||0;
+    if(rfr>0){
+      var res=calcPTZ(g('p-zone').value,nbP,rfr,prix,false);
+      if(res.ok){
+        ptz=res;
+        var bh='<div class="ptz-badge ok"><b>PTZ\u202f: '+fr(ptz.mt)+'</b> — tranche T'+ptz.t+', quotité '+(ptz.qt*100)+'\u202f% × assiette '+fr(ptz.as);
+        bh+='<br>Différé tranche\u202f: '+(ptz.diffM/12)+' ans · Remboursement\u202f: '+(ptz.rembM/12)+' ans · '+fr2(ptz.mt/ptz.rembM)+'/mois';
+        if(ptz.qf===Math.round(prix/9/PTZ.cf[Math.min(nbP-1,4)]))bh+='<br><span style="opacity:.8">⚠ Le plancher prix/9 ('+fr(Math.round(prix/9))+') dépasse votre RFR — c\'est lui qui détermine la tranche</span>';
+        bh+='</div>';
+        g('ptz-banner').innerHTML=bh;
+      }else{g('ptz-banner').innerHTML='<div class="ptz-badge ko">'+res.msg+'</div>';}
+    }else g('ptz-banner').innerHTML='<div class="ptz-badge ko">Saisissez votre RFR N-2</div>';
+  }else if(ptzOn&&!neuf){
+    g('ptz-banner').innerHTML='<div class="ptz-badge ko">PTZ indisponible\u202f: bien ancien hors zones B2/C avec travaux</div>';
+  }else g('ptz-banner').innerHTML='';
+
+  var capZ=ptz?Math.min(ptz.mt,besoin):0;
+  var capP=besoin-capZ;
+  var dZ=ptz?ptz.diffM:0, rZ=ptz?ptz.rembM:120;
+
+  /* === SIMULATE === */
+  var insP=capP*tAss/12, insZ=capZ*tAss/12;
+  var sim=simulate(capP,r,nTot,d0,capZ,dZ,rZ,lisse&&!!ptz,insP,insZ);
+  var zLifeEnd=sim.zEnd;
+
+  /* Phase boundaries (crédit + assurance) */
+  var bounds=[];
+  if(d0>0)bounds.push(d0);
+  if(capZ>0){if(sim.zStart>d0)bounds.push(sim.zStart);if(zLifeEnd<nTot)bounds.push(zLifeEnd);}
+  bounds.push(nTot);
+  bounds=[...new Set(bounds)].sort(function(a,b){return a-b});
+
+  var phases=[],prev=0;
+  bounds.forEach(function(b){
+    if(b<=prev)return;
+    var mid=Math.floor((prev+b+1)/2)-1, mm=sim.months[mid];
+    var ins=insP+(mid<zLifeEnd&&capZ>0?insZ:0);
+    var mens=mm.payP+mm.payZ+ins;
+    var label, color;
+    if(prev<d0){label='Différé (construction)';color='var(--amber)'}
+    else if(capZ>0&&prev<zLifeEnd&&mm.payZ>0){label='Prêt + PTZ'+(lisse?' (lissé)':'');color='var(--green)'}
+    else if(capZ>0&&prev<sim.zStart){label='Prêt seul (différé PTZ)';color='var(--blue)'}
+    else{label=capZ>0?'Prêt seul (PTZ soldé)':'Prêt';color='var(--blue)'}
+    phases.push({from:prev,to:b,mens:mens,label:label,color:color,payP:mm.payP,payZ:mm.payZ,ins:ins});
+    prev=b;
+  });
+
+  /* Timeline */
+  var tlH='',colors={'var(--amber)':'#ffb84d','var(--green)':'#2dd4a0','var(--blue)':'#4d9fff'};
+  phases.forEach(function(p){
+    var w=(p.to-p.from)/nTot*100;
+    tlH+='<div class="tl-seg" style="width:'+w+'%;background:'+colors[p.color]+'" title="'+p.label+'">'+((p.to-p.from)>=18?Math.round((p.to-p.from)/12*10)/10+' ans':'')+'</div>';
+  });
+  g('tl').innerHTML=tlH;
+  s('tl-end',(nTot/12%1===0?(nTot/12)+' ans':Math.floor(nTot/12)+' ans '+(nTot%12)+' mois'));
+
+  /* Phase cards */
+  var phH='';
+  phases.forEach(function(p,i){
+    phH+='<div class="phase-card"><div class="phase-num" style="background:'+colors[p.color]+'">'+(i+1)+'</div>';
+    phH+='<div class="phase-info"><div class="phase-t">'+p.label+'</div><div class="phase-s">Mois '+(p.from+1)+' → '+p.to+' · prêt '+fr2(p.payP)+(p.payZ>0?' + PTZ '+fr2(p.payZ):'')+' + ass. '+fr2(p.ins)+'</div></div>';
+    phH+='<div class="phase-v" style="color:'+colors[p.color]+'">'+fr2(p.mens)+'</div></div>';
+  });
+  g('phases').innerHTML=phH;
+
+  /* Cash */
+  s('rap',fr(apport));
+  g('fn-row').style.display=fnOff?'none':'';
+  if(!fnOff)s('rfn',fr(fn)+' ('+(fnp*100).toFixed(1)+'\u202f%)');
+  s('rfb',fr(fb));
+  s('rct',fr(apport+fn+fb));
+  var pa=apport/prix;
+  g('bdg').innerHTML=pa<.1?'<span class="badge b-warn">Apport &lt; 10\u202f% — dossier difficile</span>':pa<.2?'<span class="badge b-neu">Apport 10–20\u202f%</span>':'<span class="badge b-ok">Apport solide ≥ 20\u202f%</span>';
+
+  /* Totals */
+  var tIns=insP*nTot+(capZ>0?insZ*zLifeEnd:0);
+  var coutCredit=sim.ti+tIns+fb;
+  var sansPtz=null;
+  if(capZ>0){sansPtz=simulate(besoin,r,nTot,d0,0,0,0,false,besoin*tAss/12,0);}
+  var econ=sansPtz?Math.max(0,sansPtz.ti-sim.ti+(besoin*tAss/12*nTot-tIns)):0;
+
+  s('rc',fr(capP)+(capZ>0?' +\u202f'+fr(capZ):''));
+  g('rcs').innerHTML=capZ>0?'prêt principal + <span class="g">PTZ 0\u202f%</span> · LTV '+p1(besoin/prix*100):'LTV '+p1(besoin/prix*100);
+  s('ri',fr(sim.ti));
+  g('ris').innerHTML=capZ>0&&econ>0?'économie <span class="g">'+fr(econ)+'</span> vs sans PTZ':p1(sim.ti/besoin*100)+' du capital';
+  s('ra',fr(tIns));
+  s('ras',fr2(insP+insZ)+'/mois au départ');
+  s('rco',fr(coutCredit));
+  s('rcos','intérêts + assurance + frais bancaires');
+
+  /* Debt ratio (pire phase, hors différé pur si lissage) */
+  var worst=0;phases.forEach(function(p){if(p.mens>worst)worst=p.mens});
+  if(rev>0){
+    var dr=worst/rev*100;
+    g('debt-pct').textContent=p1(dr);
+    var f=g('debt-fill');
+    f.style.width=Math.min(dr/40*100,100)+'%';
+    f.style.background=dr<30?'var(--green)':dr<=35?'var(--amber)':'var(--coral)';
+    g('debt-warn').innerHTML=dr>35?'<span class="badge b-bad">⚠ Dépasse le plafond HCSF — la banque refusera probablement</span>':'';
+  }else{g('debt-pct').textContent='—';g('debt-fill').style.width='0';g('debt-warn').innerHTML='';}
+
+  /* ===== Yearly aggregation ===== */
+  var lbl=[],yP=[],yZ=[],yI=[],bP=[capP],bZ=[capZ],atH='';
+  var totalYrs=Math.ceil(nTot/12);
+  for(var y=0;y<totalYrs;y++){
+    var mens=0,intr=0,capr=0,assr=0;
+    for(var m=y*12;m<(y+1)*12&&m<nTot;m++){
+      var mm=sim.months[m];
+      var ins=insP+(m<zLifeEnd&&capZ>0?insZ:0);
+      mens+=mm.payP+mm.payZ+ins;intr+=mm.iP;capr+=(mm.payP-mm.iP)+mm.payZ;assr+=ins;
+    }
+    var last=sim.months[Math.min((y+1)*12,nTot)-1];
+    lbl.push(y+1);
+    var sampleM=sim.months[Math.min(y*12+6,nTot-1)];
+    yP.push(Math.round(sampleM.payP));
+    yZ.push(Math.round(sampleM.payZ));
+    yI.push(Math.round(sampleM.ins));
+    bP.push(Math.round(last.B));bZ.push(Math.round(last.Z));
+    atH+='<div class="amort-r"><span>'+(y+1)+'</span><span class="hl">'+Math.round(mens).toLocaleString('fr-FR')+'\u202f€</span><span>'+Math.round(intr).toLocaleString('fr-FR')+'\u202f€</span><span>'+Math.round(capr).toLocaleString('fr-FR')+'\u202f€</span><span>'+Math.round(assr).toLocaleString('fr-FR')+'\u202f€</span><span class="hl">'+Math.round(last.B+last.Z).toLocaleString('fr-FR')+'\u202f€</span></div>';
+    if(d0>0&&(y+1)*12>=d0&&y*12<d0)atH+='<div class="amort-sep s1">▼ Fin du différé — l\'amortissement du capital commence</div>';
+    if(capZ>0&&(y+1)*12>=zLifeEnd&&y*12<zLifeEnd&&zLifeEnd<nTot)atH+='<div class="amort-sep s2">▼ PTZ soldé — mensualité '+(lisse?'inchangée (lissage)':'allégée')+'</div>';
+  }
+  g('atbl').innerHTML=atH;
+
+  /* ===== CHART 1: monthly by year (stacked) ===== */
+  if(ch1)ch1.destroy();
+  var ds1=[
+    {label:'Prêt principal',data:yP,backgroundColor:'rgba(77,159,255,.8)',borderRadius:2,stack:'a'},
+    {label:'Assurance',data:yI,backgroundColor:'rgba(167,139,250,.6)',borderRadius:2,stack:'a'}
+  ];
+  var legH='<span><span class="ldot" style="background:#4d9fff"></span>Prêt principal</span><span><span class="ldot" style="background:#a78bfa"></span>Assurance</span>';
+  if(capZ>0){
+    ds1.splice(1,0,{label:'PTZ',data:yZ,backgroundColor:'rgba(45,212,160,.8)',borderRadius:2,stack:'a'});
+    legH+='<span><span class="ldot" style="background:#2dd4a0"></span>PTZ</span>';
+    if(sansPtz){
+      var refM=[];
+      for(var y2=0;y2<yrs;y2++){var sm=sansPtz.months[Math.min(y2*12+6,nTot-1)];refM.push(Math.round(sm.payP+besoin*tAss/12));}
+      ds1.push({label:'Sans PTZ',data:refM,type:'line',borderColor:'#ff6b4d',borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false,order:-1});
+      legH+='<span><span style="display:inline-block;width:14px;border-top:2px dashed #ff6b4d"></span> Sans PTZ</span>';
+    }
+  }
+  g('c1leg').innerHTML=legH;
+  ch1=new Chart(g('c1'),{type:'bar',data:{labels:lbl,datasets:ds1},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{
+      title:function(it){return 'Année '+it[0].label},
+      label:function(c){return c.dataset.label+'\u202f: '+c.parsed.y.toLocaleString('fr-FR')+'\u202f€/mois'},
+      footer:function(it){var t=0;it.forEach(function(i){if(i.dataset.type!=='line')t+=i.parsed.y});return 'Total\u202f: '+t.toLocaleString('fr-FR')+'\u202f€/mois'}}}},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{autoSkip:true,maxTicksLimit:14,font:FONT,color:'#5c6b7a'}},
+    y:{stacked:true,beginAtZero:true,grid:{color:GRID},ticks:{callback:function(v){return v.toLocaleString('fr-FR')},font:FONT,color:'#5c6b7a'}}}}});
+
+  /* ===== CHART 2: balance ===== */
+  if(ch2)ch2.destroy();
+  var l2=[0].concat(lbl);
+  var ds2=[{label:'Prêt principal',data:bP,backgroundColor:'rgba(77,159,255,.12)',borderColor:'#4d9fff',borderWidth:2,fill:true,tension:.12,pointRadius:0}];
+  if(capZ>0)ds2.push({label:'PTZ',data:bZ,backgroundColor:'rgba(45,212,160,.12)',borderColor:'#2dd4a0',borderWidth:2,fill:true,tension:.12,pointRadius:0});
+  g('c2leg').innerHTML='<span><span class="ldot" style="background:#4d9fff"></span>Prêt principal</span>'+(capZ>0?'<span><span class="ldot" style="background:#2dd4a0"></span>PTZ</span>':'');
+  ch2=new Chart(g('c2'),{type:'line',data:{labels:l2,datasets:ds2},options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{title:function(it){return it[0].label==0?'Signature':'Fin année '+it[0].label},label:function(c){return c.dataset.label+'\u202f: '+Math.round(c.parsed.y).toLocaleString('fr-FR')+'\u202f€'}}}},
+    scales:{x:{stacked:false,grid:{display:false},ticks:{autoSkip:true,maxTicksLimit:14,font:FONT,color:'#5c6b7a'}},
+    y:{stacked:true,grid:{color:GRID},ticks:{callback:function(v){return (v/1000).toFixed(0)+'k'},font:FONT,color:'#5c6b7a'}}}}});
+
+  /* ===== CHART 3: donut ===== */
+  if(ch3)ch3.destroy();
+  var dd=[capP],dl=['Prêt principal'],dc=['#4d9fff'];
+  if(capZ>0){dd.push(capZ);dl.push('PTZ (0\u202f%)');dc.push('#2dd4a0');}
+  dd.push(Math.round(sim.ti));dl.push('Intérêts');dc.push('#ff6b4d');
+  dd.push(Math.round(tIns));dl.push('Assurance');dc.push('#a78bfa');
+  if(fb>0){dd.push(fb);dl.push('Frais bancaires');dc.push('#f472b6');}
+  if(!fnOff&&fn>0){dd.push(Math.round(fn));dl.push('Frais notaire');dc.push('#ffb84d');}
+  var totD=dd.reduce(function(a,b){return a+b},0);
+  g('c3leg').innerHTML=dl.map(function(l,i){return '<div class="dlr"><span class="ldot" style="background:'+dc[i]+'"></span>'+l+'<span class="v">'+fr(dd[i])+'</span><span class="p">'+p1(dd[i]/totD*100)+'</span></div>'}).join('');
+  ch3=new Chart(g('c3'),{type:'doughnut',data:{labels:dl,datasets:[{data:dd,backgroundColor:dc,borderWidth:2,borderColor:'#171e26',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+Math.round(c.parsed).toLocaleString('fr-FR')+'\u202f€ ('+p1(c.parsed/totD*100)+')'}}}},cutout:'70%'}});
+}
+
+upd();
+</script>
+</body>
+</html>

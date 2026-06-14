@@ -15,7 +15,7 @@ const ARTIFACTS_DIR = join(ROOT, "artifacts");
 const OUT = join(ROOT, "index.json");
 
 const REQUIRED = ["id", "name", "type", "version", "description", "tags", "entry", "files"];
-const TYPES = new Set(["component", "snippet", "prompt", "template", "dataset", "skill"]);
+const TYPES = new Set(["app", "simulator", "visualization", "tool", "game", "document", "pptx", "docx"]);
 
 async function isDir(p) {
   try {
@@ -59,7 +59,9 @@ async function main() {
       errors.push(`${folder}: entry "${meta.entry}" is not listed in files`);
     }
 
-    artifacts.push({ ...meta, path: `artifacts/${folder}` });
+    // HTML entries can be rendered live (in an iframe) by the gallery.
+    const renderable = /\.html?$/i.test(meta.entry ?? "");
+    artifacts.push({ ...meta, path: `artifacts/${folder}`, renderable });
   }
 
   if (errors.length) {

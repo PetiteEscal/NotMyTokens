@@ -1,8 +1,9 @@
-# NotMyToken
+# NotMyTokens
 
-A public registry of reusable **artifacts** — components, snippets, prompts,
-templates — with a static gallery for humans and a remote **MCP server** so LLMs
-(Claude & friends) can search, fetch, and submit artifacts mid-conversation.
+A public registry of self-contained, runnable **artifacts** — apps, simulators,
+visualizations, tools — with a static gallery for humans (live HTML preview) and
+a remote **MCP server** so LLMs (Claude & friends) can search, fetch, and submit
+artifacts mid-conversation.
 
 This is **Option 1 — fully serverless**: nothing runs on your own hardware.
 

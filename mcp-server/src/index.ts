@@ -134,14 +134,14 @@ const TOOLS = [
   {
     name: "search_artifacts",
     description:
-      "Search the NotMyToken registry for reusable artifacts (components, snippets, prompts, etc.). Returns matching summaries; use get_artifact to fetch full content.",
+      "Search the NotMyTokens registry for self-contained artifacts (apps, simulators, visualizations, tools, etc.). Returns matching summaries; use get_artifact to fetch full content.",
     inputSchema: {
       type: "object",
       properties: {
         query: { type: "string", description: "Free-text search over name, description and tags." },
         type: {
           type: "string",
-          enum: ["component", "snippet", "prompt", "template", "dataset", "skill"],
+          enum: ["app", "simulator", "visualization", "tool", "game", "document", "pptx", "docx"],
           description: "Optional category filter.",
         },
         tags: { type: "array", items: { type: "string" }, description: "Optional tags; an artifact must contain all of them." },
@@ -168,7 +168,7 @@ const TOOLS = [
       properties: {
         id: { type: "string", description: "Unique slug, lowercase kebab-case. Becomes the folder name." },
         name: { type: "string" },
-        type: { type: "string", enum: ["component", "snippet", "prompt", "template", "dataset", "skill"] },
+        type: { type: "string", enum: ["app", "simulator", "visualization", "tool", "game", "document", "pptx", "docx"] },
         version: { type: "string", description: "Semver, e.g. 1.0.0." },
         description: { type: "string" },
         tags: { type: "array", items: { type: "string" } },

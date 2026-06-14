@@ -13,7 +13,7 @@ const INDEX = {
     {
       id: "react-pricing-card",
       name: "Pricing Card",
-      type: "component",
+      type: "visualization",
       version: "1.0.0",
       description: "Responsive pricing card with Tailwind.",
       tags: ["react", "tailwind", "ui"],
@@ -96,7 +96,7 @@ await test("tools/list returns the 3 tools", async () => {
 });
 
 await test("search_artifacts matches by query and type", async () => {
-  const { body } = await rpc("tools/call", { name: "search_artifacts", arguments: { query: "tailwind", type: "component" } });
+  const { body } = await rpc("tools/call", { name: "search_artifacts", arguments: { query: "tailwind", type: "visualization" } });
   const data = toolData(body);
   assert.equal(data.count, 1);
   assert.equal(data.results[0].id, "react-pricing-card");
@@ -126,7 +126,7 @@ await test("upload_artifact opens a PR through the Git Data API", async () => {
     arguments: {
       id: "new-thing",
       name: "New Thing",
-      type: "snippet",
+      type: "tool",
       version: "1.0.0",
       description: "A new snippet.",
       tags: ["x"],
@@ -148,7 +148,7 @@ await test("upload_artifact rejects duplicate id", async () => {
     arguments: {
       id: "react-pricing-card",
       name: "Dup",
-      type: "snippet",
+      type: "tool",
       version: "1.0.0",
       description: "dup",
       tags: [],

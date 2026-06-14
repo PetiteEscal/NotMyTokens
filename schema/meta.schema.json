@@ -22,8 +22,8 @@
     },
     "type": {
       "type": "string",
-      "description": "Coarse category used for filtering.",
-      "enum": ["component", "snippet", "prompt", "template", "dataset", "skill"]
+      "description": "Kind of self-contained artifact, used for filtering.",
+      "enum": ["app", "simulator", "visualization", "tool", "game", "document", "pptx", "docx"]
     },
     "version": {
       "type": "string",

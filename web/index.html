@@ -11,7 +11,7 @@
       <div class="wrap">
         <p class="kicker">// artifact registry</p>
         <h1 class="glitch" data-text="NotMyTokens">NotMyTokens</h1>
-        <p class="tagline">Reusable artifacts — components, snippets, prompts — for humans and machines.</p>
+        <p class="tagline">Self-contained, runnable artifacts — apps, simulators, visualizations — for humans and machines.</p>
       </div>
     </header>
 
@@ -20,12 +20,14 @@
         <input id="search" type="search" placeholder="Search name, description, tags…" autocomplete="off" />
         <select id="type-filter" aria-label="Filter by type">
           <option value="">All types</option>
-          <option value="component">component</option>
-          <option value="snippet">snippet</option>
-          <option value="prompt">prompt</option>
-          <option value="template">template</option>
-          <option value="dataset">dataset</option>
-          <option value="skill">skill</option>
+          <option value="app">app</option>
+          <option value="simulator">simulator</option>
+          <option value="visualization">visualization</option>
+          <option value="tool">tool</option>
+          <option value="game">game</option>
+          <option value="document">document</option>
+          <option value="pptx">pptx</option>
+          <option value="docx">docx</option>
         </select>
       </div>
 
@@ -45,11 +47,19 @@
       <p id="detail-desc" class="detail-desc"></p>
       <div id="detail-meta" class="detail-meta"></div>
       <div id="detail-tabs" class="filetabs" role="tablist"></div>
-      <div class="detail-file-head">
-        <code id="detail-filename"></code>
-        <button id="detail-copy">Copy</button>
+
+      <div id="detail-preview" class="detail-preview" hidden>
+        <iframe id="detail-frame" title="Live preview" sandbox="allow-scripts allow-popups allow-forms"></iframe>
+        <a id="detail-open" href="#" target="_blank" rel="noopener">Open in new tab ↗</a>
       </div>
-      <pre class="detail-code"><code id="detail-code"></code></pre>
+
+      <div id="detail-source" hidden>
+        <div class="detail-file-head">
+          <code id="detail-filename"></code>
+          <button id="detail-copy">Copy</button>
+        </div>
+        <pre class="detail-code"><code id="detail-code"></code></pre>
+      </div>
     </dialog>
 
     <footer class="wrap">
